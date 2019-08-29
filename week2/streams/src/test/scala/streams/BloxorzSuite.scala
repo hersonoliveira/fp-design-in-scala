@@ -12,29 +12,6 @@ class BloxorzSuite extends FunSuite {
 
   trait SolutionChecker extends GameDef with Solver with StringParserTerrain {
 
-    test("neighborsWithHistory()") {
-      val expected = Set(
-        (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
-        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
-      )
-      val result = neighborsWithHistory(Block(Pos(1, 1), Pos(1, 1)), List(Left, Up))
-      assert(result equals expected)
-    }
-
-    test("newNeighborsOnly()") {
-      val expected = Set(
-        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
-      ).toStream
-      val result = newNeighborsOnly(
-        Set(
-          (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
-          (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
-        ).toStream,
-        Set(Block(Pos(1, 2), Pos(1, 3)), Block(Pos(1, 1), Pos(1, 1)))
-      )
-      assert(result equals expected)
-    }
-
     /**
      * This method applies a list of moves `ls` to the block at position
      * `startPos`. This can be used to verify if a certain list of moves
@@ -64,6 +41,33 @@ class BloxorzSuite extends FunSuite {
         |------ooo-""".stripMargin
 
     val optsolution = List(Right, Right, Down, Right, Right, Right, Down)
+  }
+
+  test("neighborsWithHistory()") {
+    new Level1 {
+      val expected = Set(
+        (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+      )
+      val result = neighborsWithHistory(Block(Pos(1, 1), Pos(1, 1)), List(Left, Up))
+      assert(result.toSet equals expected)
+    }
+  }
+
+  test("newNeighborsOnly()") {
+    new Level1 {
+      val expected = Set(
+        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+      )
+      val result = newNeighborsOnly(
+        Set(
+          (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+          (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+        ).toStream,
+        Set(Block(Pos(1, 2), Pos(1, 3)), Block(Pos(1, 1), Pos(1, 1)))
+      )
+      assert(result.toSet equals expected)
+    }
   }
 
   test("terrain function level 1") {

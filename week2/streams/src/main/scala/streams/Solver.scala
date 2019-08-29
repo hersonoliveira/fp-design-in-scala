@@ -10,7 +10,7 @@ trait Solver extends GameDef {
   /**
    * Returns `true` if the block `b` is at the final position
    */
-  def done(b: Block): Boolean = (b.b1 equals goal) || (b.b2 equals goal)
+  def done(b: Block): Boolean = b.isStanding && b.b1 == goal
 
   /**
    * This function takes two arguments: the current block `b` and
@@ -39,7 +39,7 @@ trait Solver extends GameDef {
    */
   def newNeighborsOnly(neighbors: Stream[(Block, List[Move])],
                        explored: Set[Block]): Stream[(Block, List[Move])] = {
-    neighbors filter (tuple => explored contains tuple._1)
+    neighbors filterNot (tuple => explored contains tuple._1)
   }
 
   /**
@@ -66,18 +66,26 @@ trait Solver extends GameDef {
    * construct the correctly sorted stream.
    */
   def from(initial: Stream[(Block, List[Move])],
-           explored: Set[Block]): Stream[(Block, List[Move])] = ???
+           explored: Set[Block]): Stream[(Block, List[Move])] = initial match {
+    case Stream.Empty => Stream.empty
+    case (block, move) #:: tail => {
+      val newMoves = newNeighborsOnly(neighborsWithHistory(block, move), explored)
+      newMoves ++ from(tail ++ newMoves, explored + block)
+    }
+  }
 
   /**
    * The stream of all paths that begin at the starting block.
    */
-  lazy val pathsFromStart: Stream[(Block, List[Move])] = ???
+  lazy val pathsFromStart: Stream[(Block, List[Move])] = from(neighborsWithHistory(startBlock, Nil), Set(startBlock))
 
   /**
    * Returns a stream of all possible pairs of the goal block along
    * with the history how it was reached.
    */
-  lazy val pathsToGoal: Stream[(Block, List[Move])] = ???
+  lazy val pathsToGoal: Stream[(Block, List[Move])] = pathsFromStart filter {
+    case (block, _) => done(block)
+  }
 
   /**
    * The (or one of the) shortest sequence(s) of moves to reach the
@@ -87,5 +95,8 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = ???
+  lazy val solution: List[Move] = pathsToGoal match {
+    case Stream.Empty => Nil
+    case (_, move) #:: _ => move.reverse
+  }
 }
