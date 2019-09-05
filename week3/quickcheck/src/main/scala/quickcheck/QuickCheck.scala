@@ -29,4 +29,8 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(h) == a
   }
 
+  property("min2") = forAll { (a: A), (b: A) =>
+
+  }
+
 }
