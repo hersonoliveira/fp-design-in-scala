@@ -10,12 +10,10 @@ import Prop._
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   lazy val genHeap: Gen[H] = {
-    oneOf(const(empty),
-      for {
-        k <- arbitrary[A]
-        v <- oneOf(const(empty), genHeap)
-      } yield insert(k, v)
-    )
+    for {
+      k <- arbitrary[A]
+      v <- oneOf(const(empty), genHeap)
+    } yield insert(k, v)
   }
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
@@ -43,7 +41,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
   property("sorted") = forAll { h: H =>
     def loop(heap: H, res: List[Int]): List[Int] = {
       if (heap == empty) res
-      else loop(deleteMin(heap), findMin(heap) :: res)
+      else loop(deleteMin(heap), res ::: List(findMin(heap)))
     }
 
     val x = loop(h, Nil)
@@ -51,14 +49,15 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
   }
 
   property("min of melding") = forAll { (a: H, b: H) =>
-    val min1 = findMin(a)
-    val min2 = findMin(b)
-    val h = meld(a, b)
-    val min = findMin(h)
-    min == min1 || min == min2
-//    val min = if (min1 > min2) min2 else min1
-//    findMin(h) == min
+    val min = findMin(meld(a, b))
+    min == Math.min(findMin(a), findMin(b))
   }
 
+  property("3 integers") = forAll { (a: Int, b: Int, c: Int) =>
+    val h = insert(a, insert(b, insert(c, empty)))
+    val max = Math.max(a, Math.max(b ,c))
+    val h1 = deleteMin(deleteMin(h))
+    findMin(h1) == max
+  }
 
 }
